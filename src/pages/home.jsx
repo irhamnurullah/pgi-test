@@ -1,56 +1,39 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Loading from '../components/loading';
 import Search from '../components/search';
+import { findJobs, getJobs } from '../state/actionCreators';
 
 function Home() {
-  const url = process.env.REACT_APP_URL;
-  const [jobs, setJobs] = useState([]);
-  const [jobDesc, setJobDesc] = useState('');
-  const [location, setLocation] = useState('');
-  const [loading, setLoading] = useState(true);
+  const { jobs } = useSelector((state) => state);
+  const dispatch = useDispatch();
+  const [field, setField] = useState({
+    jobDesc: '',
+    location: '',
+  });
 
-  function handleJobDescChange(e) {
-    setJobDesc(e.target.value);
+  useEffect(() => {
+    dispatch(getJobs());
+  }, [dispatch]);
+
+  function handleChange(e) {
+    setField({
+      ...field,
+      [e.target.name]: e.target.value,
+    });
   }
 
-  function handleLocationChange(e) {
-    setLocation(e.target.value);
-  }
-
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
 
     try {
-      setLoading(true);
-      const response = await axios.get(url, {
-        params: {
-          description: jobDesc,
-          location: location,
-        },
-      });
-
-      setJobs(response.data);
+      dispatch(findJobs(field.jobDesc, field.location));
     } catch (error) {
       console.log(error);
-    } finally {
-      setJobDesc('');
-      setLocation('');
-      setLoading(false);
     }
-  }
 
-  async function getJobLists() {
-    try {
-      setLoading(true);
-      const response = await axios.get(url);
-      setJobs(response.data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
+    e.target.reset();
   }
 
   function removeSpecifiedChar(str) {
@@ -58,33 +41,23 @@ function Home() {
     return specifiedChar;
   }
 
-  useEffect(() => {
-    getJobLists();
-  }, []);
-
   return (
     <div className="space-y-4 pt-8 pb-20">
-      <Search
-        handleJobDescChange={handleJobDescChange}
-        handleLocationChange={handleLocationChange}
-        jobDesc={jobDesc}
-        location={location}
-        onSubmit={handleSubmit}
-      />
+      <Search onSubmit={handleSubmit} onChange={handleChange} />
 
       <article className="p-8 bg-white rounded-lg shadow-md">
         <h1 className="font-bold text-xl mb-3">Job List</h1>
         <ul className="space-y-4">
-          {loading ? (
+          {jobs.loading ? (
             <Loading />
-          ) : jobs.length === 0 ? (
+          ) : jobs.data.length === 0 ? (
             <div>
               <p>Jobs not Found</p>
 
               <button onClick={() => window.location.reload()}>back to home</button>
             </div>
           ) : (
-            jobs.map((job, index) => {
+            jobs.data.map((job, index) => {
               return (
                 <li key={index}>
                   <Link to={`/detail/${job.id}`}>

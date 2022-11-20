@@ -1,12 +1,6 @@
 import React from 'react';
 
-export default function Search({
-  onSubmit,
-  jobDesc,
-  location,
-  handleJobDescChange,
-  handleLocationChange,
-}) {
+export default function Search({ onSubmit, onChange }) {
   return (
     <form className="px-28" onSubmit={onSubmit}>
       <div className="flex space-x-4 items-end justify-between">
@@ -16,8 +10,8 @@ export default function Search({
             type="text"
             placeholder="job description"
             className="form-input py-1 rounded-md"
-            value={jobDesc}
-            onChange={handleJobDescChange}
+            name="jobDesc"
+            onChange={onChange}
           />
         </label>
         <label className="flex flex-col flex-1">
@@ -26,8 +20,8 @@ export default function Search({
             type="text"
             placeholder="location"
             className="form-input py-1 rounded-md"
-            value={location}
-            onChange={handleLocationChange}
+            name="location"
+            onChange={onChange}
           />
         </label>
         <label className="flex flex-row-reverse items-center mb-2 gap-1">
